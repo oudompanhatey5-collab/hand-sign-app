@@ -3,171 +3,182 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ជំនួយការជនពិការ និងអ្នកគថ្លង់</title>
-    
+    <title>Multi-Assist App</title>
     <style>
-        /* ផ្នែករចនា (CSS) */
-        body {
-            font-family: 'Khmer OS Battambang', Arial, sans-serif;
-            background-color: #f4f7f6;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            margin: 0;
+        :root {
+            --primary: #2563eb;
+            --secondary: #7c3aed;
+            --danger: #dc2626;
+            --bg: #f8fafc;
         }
 
-        .app-container {
-            background-color: white;
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+        body {
+            font-family: 'Khmer OS Battambang', system-ui, sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
             width: 100%;
-            max-width: 450px;
+            max-width: 500px;
+            padding: 25px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
             text-align: center;
         }
 
-        h1 {
-            color: #2c3e50;
-            font-size: 22px;
-            margin-bottom: 20px;
-        }
+        h2 { color: var(--primary); margin-bottom: 5px; }
+        p { color: #64748b; font-size: 14px; }
 
-        #status {
-            font-size: 14px;
-            color: #7f8c8d;
-            margin-bottom: 10px;
-        }
-
-        #result-box {
+        /* ប្រអប់បង្ហាញអក្សរសម្រាប់អ្នកថ្លង់ */
+        #display-area {
             width: 100%;
-            min-height: 150px;
-            border: 2px dashed #3498db;
-            border-radius: 10px;
-            padding: 15px;
-            margin-bottom: 20px;
-            background-color: #f9f9f9;
+            min-height: 200px;
+            background: #f1f5f9;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 20px 0;
+            font-size: 24px; /* អក្សរធំសម្រាប់ងាយមើល */
+            line-height: 1.5;
+            color: #1e293b;
             text-align: left;
-            font-size: 18px;
-            line-height: 1.6;
-            color: #34495e;
             box-sizing: border-box;
-            word-wrap: break-word;
+            border: 2px solid #e2e8f0;
         }
 
-        .button-group {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
+        .btn-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
         }
 
         button {
-            padding: 12px 20px;
+            padding: 15px;
             font-size: 16px;
-            border: none;
-            border-radius: 50px;
-            cursor: pointer;
-            transition: all 0.3s ease;
             font-family: 'Khmer OS Battambang';
-        }
-
-        .btn-start {
-            background-color: #27ae60;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: 0.2s;
             color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
         }
 
-        .btn-start:hover {
-            background-color: #219150;
+        /* ប៊ូតុងសម្រាប់អ្នកថ្លង់ */
+        .btn-hear { background-color: var(--primary); }
+        /* ប៊ូតុងសម្រាប់អ្នកពិការភ្នែក */
+        .btn-speak { background-color: var(--secondary); }
+        
+        .btn-stop { 
+            background-color: var(--danger); 
+            grid-column: span 2; 
+            margin-top: 10px;
         }
 
-        .btn-stop {
-            background-color: #e74c3c;
-            color: white;
+        button:active { transform: scale(0.98); }
+
+        .active-ring {
+            box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.3);
+            animation: pulse 1.5s infinite;
         }
 
-        .btn-stop:hover {
-            background-color: #c0392b;
-        }
-
-        /* សម្រាប់ឱ្យអក្សរលោតញាក់ពេលកំពុងស្តាប់ */
-        .recording {
-            color: #e74c3c;
-            font-weight: bold;
-            animation: blink 1s infinite;
-        }
-
-        @keyframes blink {
-            50% { opacity: 0.5; }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+            100% { transform: scale(1); }
         }
     </style>
 </head>
 <body>
 
-    <div class="app-container">
-        <h1>ជំនួយការបកប្រែសំឡេង (Speech-to-Text)</h1>
-        
-        <p id="status">ត្រៀមខ្លួនរួចរាល់</p>
-        
-        <div id="result-box" placeholder="អត្ថបទដែលនិយាយនឹងបង្ហាញនៅទីនេះ...">
-            សូមចុចប៊ូតុងខាងក្រោមដើម្បីនិយាយ...
-        </div>
+<div class="container">
+    <h2>ជំនួយការពិការភាពចម្រុះ</h2>
+    <p>ជួយដល់អ្នកគថ្លង់ និងអ្នកពិការភ្នែក</p>
 
-        <div class="button-group">
-            <button class="btn-start" onclick="startConverting()">ចាប់ផ្តើមស្តាប់</button>
-            <button class="btn-stop" onclick="stopConverting()">បញ្ឈប់</button>
-        </div>
+    <div id="display-area" id="text-to-read">សូមចុចប៊ូតុងខាងក្រោម...</div>
+
+    <div class="btn-grid">
+        <button class="btn-hear" id="listen-btn">
+            <span>🎤 ស្ដាប់សំឡេង</span>
+            <small>(ប្តូរទៅជាអក្សរ)</small>
+        </button>
+
+        <button class="btn-speak" id="read-btn">
+            <span>🔊 អានអត្ថបទ</span>
+            <small>(ប្តូរទៅជាសំឡេង)</small>
+        </button>
+
+        <button class="btn-stop" id="stop-btn">បញ្ឈប់ទាំងអស់</button>
     </div>
+</div>
 
-    <script>
-        /* ផ្នែកបញ្ជា (JavaScript) */
-        var r = document.getElementById('result-box');
-        var s = document.getElementById('status');
-        
-        // ឆែកមើលថាតើ Browser គាំទ្រដែរឬទេ
-        var speechRecognizer = window.webkitSpeechRecognition || window.speechRecognition;
+<script>
+    const display = document.getElementById('display-area');
+    const listenBtn = document.getElementById('listen-btn');
+    const readBtn = document.getElementById('read-btn');
+    const stopBtn = document.getElementById('stop-btn');
 
-        if (typeof speechRecognizer !== 'undefined') {
-            var recognition = new speechRecognizer();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'km-KH'; // កំណត់យកភាសាខ្មែរ
+    // 1. បច្ចេកវិទ្យា Speech to Text (សម្រាប់អ្នកថ្លង់)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognition;
 
-            function startConverting() {
+    if (SpeechRecognition) {
+        recognition = new SpeechRecognition();
+        recognition.lang = 'km-KH';
+        recognition.continuous = true;
+        recognition.interimResults = true;
+
+        recognition.onresult = (event) => {
+            let text = "";
+            for (let i = 0; i < event.results.length; i++) {
+                text += event.results[i][0].transcript;
+            }
+            display.innerText = text;
+        };
+
+        recognition.onend = () => {
+            // បើវាដាច់ដោយខ្លួនឯង ឱ្យវាចាប់ផ្តើមឡើងវិញ (ដោះស្រាយបញ្ហាដែលអ្នកជួប)
+            if(listenBtn.classList.contains('active-ring')) {
                 recognition.start();
-                s.innerHTML = "ស្ថានភាព៖ <span class='recording'>កំពុងស្តាប់...</span>";
-                r.innerHTML = "";
             }
+        };
+    }
 
-            function stopConverting() {
-                recognition.stop();
-                s.innerHTML = "ស្ថានភាព៖ បានបញ្ឈប់";
-                s.style.color = "#7f8c8d";
-            }
-
-            recognition.onresult = function(event) {
-                var interimTranscript = '';
-                for (var i = event.resultIndex; i < event.results.length; i++) {
-                    var transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) {
-                        r.innerHTML += transcript;
-                    } else {
-                        interimTranscript += transcript;
-                    }
-                }
-                // បង្ហាញអត្ថបទបណ្តោះអាសន្នពេលកំពុងនិយាយ
-                if (interimTranscript !== "") {
-                    r.innerHTML = interimTranscript;
-                }
-            };
-
-            recognition.onerror = function(event) {
-                s.innerHTML = "មានបញ្ហា៖ " + event.error;
-            };
-        } else {
-            r.innerHTML = "សូមទោស! កម្មវិធីរុករក (Browser) របស់អ្នកមិនគាំទ្រមុខងារនេះទេ។ សូមប្រើ Google Chrome។";
+    listenBtn.onclick = () => {
+        if (recognition) {
+            recognition.start();
+            listenBtn.classList.add('active-ring');
+            display.innerText = "កំពុងស្តាប់... សូមនិយាយភាសាខ្មែរ";
         }
-    </script>
+    };
+
+    // 2. បច្ចេកវិទ្យា Text to Speech (សម្រាប់អ្នកពិការភ្នែក)
+    readBtn.onclick = () => {
+        const textToRead = display.innerText;
+        const utterance = new SpeechSynthesisUtterance(textToRead);
+        utterance.lang = 'km-KH'; // ចំណាំ៖ Browser ខ្លះមិនទាន់មានសំឡេងខ្មែរឡើយ វានឹងប្រើសំឡេងលំនាំដើម
+        window.speechSynthesis.speak(utterance);
+        readBtn.classList.add('active-ring');
+        
+        utterance.onend = () => readBtn.classList.remove('active-ring');
+    };
+
+    // 3. ប៊ូតុងបញ្ឈប់
+    stopBtn.onclick = () => {
+        if (recognition) recognition.stop();
+        window.speechSynthesis.cancel();
+        listenBtn.classList.remove('active-ring');
+        readBtn.classList.remove('active-ring');
+        display.innerText = "បានបញ្ឈប់។";
+    };
+</script>
 
 </body>
 </html>
-
