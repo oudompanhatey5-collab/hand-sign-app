@@ -3,100 +3,170 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>App ដៃប្រាប់ចិត្ត - សម្រាប់ជនពិការភាព</title>
+    <title>ជំនួយការជនពិការ និងអ្នកគថ្លង់</title>
+    
     <style>
-        body { font-family: 'Khmer OS Siemreap', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; text-align: center; color: #333; }
-        .app-container { background: white; max-width: 450px; margin: auto; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
-        h2 { color: #2c3e50; margin-bottom: 20px; }
-        
-        /* ផ្នែក Speech to Text */
-        .mic-box { background: #e8f4f8; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
-        .mic-btn { background: #e74c3c; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 18px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: auto; gap: 10px; }
-        .mic-btn:active { transform: scale(0.95); background: #c0392b; }
-        #text-output { margin-top: 15px; font-size: 20px; color: #2980b9; min-height: 50px; padding: 10px; background: white; border-radius: 10px; border: 1px dashed #bdc3c7; }
+        /* ផ្នែករចនា (CSS) */
+        body {
+            font-family: 'Khmer OS Battambang', Arial, sans-serif;
+            background-color: #f4f7f6;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
 
-        /* ផ្នែក Text to Sign */
-        .sign-box { background: #fcf3cf; padding: 20px; border-radius: 15px; }
-        input { width: 90%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 18px; text-align: center; outline: none; margin-bottom: 10px; }
-        .search-btn { background: #f39c12; color: white; border: none; padding: 12px 25px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 95%; }
-        #sign-image { width: 100%; max-width: 200px; margin-top: 15px; display: none; border-radius: 10px; }
-        #sign-error { color: #e74c3c; margin-top: 10px; font-size: 14px; }
+        .app-container {
+            background-color: white;
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            width: 100%;
+            max-width: 450px;
+            text-align: center;
+        }
+
+        h1 {
+            color: #2c3e50;
+            font-size: 22px;
+            margin-bottom: 20px;
+        }
+
+        #status {
+            font-size: 14px;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+        }
+
+        #result-box {
+            width: 100%;
+            min-height: 150px;
+            border: 2px dashed #3498db;
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 20px;
+            background-color: #f9f9f9;
+            text-align: left;
+            font-size: 18px;
+            line-height: 1.6;
+            color: #34495e;
+            box-sizing: border-box;
+            word-wrap: break-word;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 16px;
+            border: none;
+            border-radius: 50px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Khmer OS Battambang';
+        }
+
+        .btn-start {
+            background-color: #27ae60;
+            color: white;
+        }
+
+        .btn-start:hover {
+            background-color: #219150;
+        }
+
+        .btn-stop {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .btn-stop:hover {
+            background-color: #c0392b;
+        }
+
+        /* សម្រាប់ឱ្យអក្សរលោតញាក់ពេលកំពុងស្តាប់ */
+        .recording {
+            color: #e74c3c;
+            font-weight: bold;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            50% { opacity: 0.5; }
+        }
     </style>
 </head>
 <body>
 
-<div class="app-container">
-    <h2>🤝 App ដៃប្រាប់ចិត្ត</h2>
+    <div class="app-container">
+        <h1>ជំនួយការបកប្រែសំឡេង (Speech-to-Text)</h1>
+        
+        <p id="status">ត្រៀមខ្លួនរួចរាល់</p>
+        
+        <div id="result-box" placeholder="អត្ថបទដែលនិយាយនឹងបង្ហាញនៅទីនេះ...">
+            សូមចុចប៊ូតុងខាងក្រោមដើម្បីនិយាយ...
+        </div>
 
-    <div class="mic-box">
-        <p>ចុចប៊ូតុងខាងក្រោម រួចនិយាយ ដើម្បីឱ្យអ្នកគថ្លង់អាន</p>
-        <button class="mic-btn" onclick="startListening()">🎤 ចុចដើម្បីនិយាយ</button>
-        <div id="text-output">...អក្សរនឹងលោតនៅទីនេះ...</div>
+        <div class="button-group">
+            <button class="btn-start" onclick="startConverting()">ចាប់ផ្តើមស្តាប់</button>
+            <button class="btn-stop" onclick="stopConverting()">បញ្ឈប់</button>
+        </div>
     </div>
 
-    <hr style="border: 1px solid #eee; margin: 25px 0;">
-
-    <div class="sign-box">
-        <p>វាយពាក្យដើម្បីមើលកាយវិការសញ្ញាដៃ</p>
-        <input type="text" id="wordInput" placeholder="ឧទាហរណ៍៖ សួស្តី, អរគុណ...">
-        <button class="search-btn" onclick="showSign()">ស្វែងរកសញ្ញាដៃ</button>
+    <script>
+        /* ផ្នែកបញ្ជា (JavaScript) */
+        var r = document.getElementById('result-box');
+        var s = document.getElementById('status');
         
-        <img id="sign-image" src="" alt="Sign Language">
-        <div id="sign-error"></div>
-    </div>
-</div>
+        // ឆែកមើលថាតើ Browser គាំទ្រដែរឬទេ
+        var speechRecognizer = window.webkitSpeechRecognition || window.speechRecognition;
 
-<script>
-    // --- មុខងារទី ១៖ បម្លែងសំឡេងទៅជាអក្សរ (Voice to Text) ---
-    function startListening() {
-        const textOutput = document.getElementById('text-output');
-        textOutput.innerText = "កំពុងស្ដាប់... (សូមនិយាយ)";
-        
-        // ប្រើ Web Speech API ដែលមានស្រាប់ក្នុង Browser
-        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-        if (!SpeechRecognition) {
-            textOutput.innerText = "ទូរស័ព្ទរបស់អ្នកមិនគាំទ្រមុខងារនេះទេ។";
-            return;
-        }
+        if (typeof speechRecognizer !== 'undefined') {
+            var recognition = new speechRecognizer();
+            recognition.continuous = true;
+            recognition.interimResults = true;
+            recognition.lang = 'km-KH'; // កំណត់យកភាសាខ្មែរ
 
-        const recognition = new SpeechRecognition();
-        recognition.lang = 'km-KH'; // កំណត់ឱ្យស្ដាប់ភាសាខ្មែរ
+            function startConverting() {
+                recognition.start();
+                s.innerHTML = "ស្ថានភាព៖ <span class='recording'>កំពុងស្តាប់...</span>";
+                r.innerHTML = "";
+            }
 
-        recognition.onresult = function(event) {
-            const transcript = event.results[0][0].transcript;
-            textOutput.innerText = transcript; // បង្ហាញអក្សរដែលនិយាយរួច
-        };
+            function stopConverting() {
+                recognition.stop();
+                s.innerHTML = "ស្ថានភាព៖ បានបញ្ឈប់";
+                s.style.color = "#7f8c8d";
+            }
 
-        recognition.onerror = function(event) {
-            textOutput.innerText = "មិនឮសំឡេងទេ សូមព្យាយាមម្ដងទៀត។";
-        };
+            recognition.onresult = function(event) {
+                var interimTranscript = '';
+                for (var i = event.resultIndex; i < event.results.length; i++) {
+                    var transcript = event.results[i][0].transcript;
+                    if (event.results[i].isFinal) {
+                        r.innerHTML += transcript;
+                    } else {
+                        interimTranscript += transcript;
+                    }
+                }
+                // បង្ហាញអត្ថបទបណ្តោះអាសន្នពេលកំពុងនិយាយ
+                if (interimTranscript !== "") {
+                    r.innerHTML = interimTranscript;
+                }
+            };
 
-        recognition.start();
-    }
-
-    // --- មុខងារទី ២៖ បម្លែងអក្សរទៅជារូបសញ្ញាដៃ (Text to Sign Image) ---
-    // ទីនេះជាកន្លែងដែលអ្នកផ្ទុករូបភាព (បច្ចុប្បន្នខ្ញុំដាក់រូបឧទាហរណ៍សិន)
-    const signDictionary = {
-        "សួស្តី": "https://dummyimage.com/200x200/f39c12/fff&text=Hand+Sign:+Hello",
-        "អរគុណ": "https://dummyimage.com/200x200/2ecc71/fff&text=Hand+Sign:+Thanks",
-        "ស្រលាញ់": "https://dummyimage.com/200x200/e74c3c/fff&text=Hand+Sign:+Love"
-    };
-
-    function showSign() {
-        const word = document.getElementById('wordInput').value.trim();
-        const imgElement = document.getElementById('sign-image');
-        const errorElement = document.getElementById('sign-error');
-
-        if (signDictionary[word]) {
-            imgElement.src = signDictionary[word];
-            imgElement.style.display = "block";
-            errorElement.innerText = "";
+            recognition.onerror = function(event) {
+                s.innerHTML = "មានបញ្ហា៖ " + event.error;
+            };
         } else {
-            imgElement.style.display = "none";
-            errorElement.innerText = "មិនទាន់មានទិន្នន័យរូបភាពសម្រាប់ពាក្យនេះទេ។";
+            r.innerHTML = "សូមទោស! កម្មវិធីរុករក (Browser) របស់អ្នកមិនគាំទ្រមុខងារនេះទេ។ សូមប្រើ Google Chrome។";
         }
-    }
-</script>
+    </script>
 
 </body>
 </html>
