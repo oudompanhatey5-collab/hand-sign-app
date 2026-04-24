@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>App ដៃប្រាប់ចិត្ត - សម្រាប់ជនពិការភាព</title>
+    <style>
+        body { font-family: 'Khmer OS Siemreap', sans-serif; background: #f4f7f6; margin: 0; padding: 20px; text-align: center; color: #333; }
+        .app-container { background: white; max-width: 450px; margin: auto; padding: 25px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.1); }
+        h2 { color: #2c3e50; margin-bottom: 20px; }
+        
+        /* ផ្នែក Speech to Text */
+        .mic-box { background: #e8f4f8; padding: 20px; border-radius: 15px; margin-bottom: 20px; }
+        .mic-btn { background: #e74c3c; color: white; border: none; padding: 15px 30px; border-radius: 50px; font-size: 18px; cursor: pointer; font-weight: bold; display: flex; align-items: center; justify-content: center; margin: auto; gap: 10px; }
+        .mic-btn:active { transform: scale(0.95); background: #c0392b; }
+        #text-output { margin-top: 15px; font-size: 20px; color: #2980b9; min-height: 50px; padding: 10px; background: white; border-radius: 10px; border: 1px dashed #bdc3c7; }
+
+        /* ផ្នែក Text to Sign */
+        .sign-box { background: #fcf3cf; padding: 20px; border-radius: 15px; }
+        input { width: 90%; padding: 15px; border: 2px solid #ddd; border-radius: 10px; font-size: 18px; text-align: center; outline: none; margin-bottom: 10px; }
+        .search-btn { background: #f39c12; color: white; border: none; padding: 12px 25px; border-radius: 10px; font-size: 16px; cursor: pointer; font-weight: bold; width: 95%; }
+        #sign-image { width: 100%; max-width: 200px; margin-top: 15px; display: none; border-radius: 10px; }
+        #sign-error { color: #e74c3c; margin-top: 10px; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <h2>🤝 App ដៃប្រាប់ចិត្ត</h2>
+
+    <div class="mic-box">
+        <p>ចុចប៊ូតុងខាងក្រោម រួចនិយាយ ដើម្បីឱ្យអ្នកគថ្លង់អាន</p>
+        <button class="mic-btn" onclick="startListening()">🎤 ចុចដើម្បីនិយាយ</button>
+        <div id="text-output">...អក្សរនឹងលោតនៅទីនេះ...</div>
+    </div>
+
+    <hr style="border: 1px solid #eee; margin: 25px 0;">
+
+    <div class="sign-box">
+        <p>វាយពាក្យដើម្បីមើលកាយវិការសញ្ញាដៃ</p>
+        <input type="text" id="wordInput" placeholder="ឧទាហរណ៍៖ សួស្តី, អរគុណ...">
+        <button class="search-btn" onclick="showSign()">ស្វែងរកសញ្ញាដៃ</button>
+        
+        <img id="sign-image" src="" alt="Sign Language">
+        <div id="sign-error"></div>
+    </div>
+</div>
+
+<script>
+    // --- មុខងារទី ១៖ បម្លែងសំឡេងទៅជាអក្សរ (Voice to Text) ---
+    function startListening() {
+        const textOutput = document.getElementById('text-output');
+        textOutput.innerText = "កំពុងស្ដាប់... (សូមនិយាយ)";
+        
+        // ប្រើ Web Speech API ដែលមានស្រាប់ក្នុង Browser
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+            textOutput.innerText = "ទូរស័ព្ទរបស់អ្នកមិនគាំទ្រមុខងារនេះទេ។";
+            return;
+        }
+
+        const recognition = new SpeechRecognition();
+        recognition.lang = 'km-KH'; // កំណត់ឱ្យស្ដាប់ភាសាខ្មែរ
+
+        recognition.onresult = function(event) {
+            const transcript = event.results[0][0].transcript;
+            textOutput.innerText = transcript; // បង្ហាញអក្សរដែលនិយាយរួច
+        };
+
+        recognition.onerror = function(event) {
+            textOutput.innerText = "មិនឮសំឡេងទេ សូមព្យាយាមម្ដងទៀត។";
+        };
+
+        recognition.start();
+    }
+
+    // --- មុខងារទី ២៖ បម្លែងអក្សរទៅជារូបសញ្ញាដៃ (Text to Sign Image) ---
+    // ទីនេះជាកន្លែងដែលអ្នកផ្ទុករូបភាព (បច្ចុប្បន្នខ្ញុំដាក់រូបឧទាហរណ៍សិន)
+    const signDictionary = {
+        "សួស្តី": "https://dummyimage.com/200x200/f39c12/fff&text=Hand+Sign:+Hello",
+        "អរគុណ": "https://dummyimage.com/200x200/2ecc71/fff&text=Hand+Sign:+Thanks",
+        "ស្រលាញ់": "https://dummyimage.com/200x200/e74c3c/fff&text=Hand+Sign:+Love"
+    };
+
+    function showSign() {
+        const word = document.getElementById('wordInput').value.trim();
+        const imgElement = document.getElementById('sign-image');
+        const errorElement = document.getElementById('sign-error');
+
+        if (signDictionary[word]) {
+            imgElement.src = signDictionary[word];
+            imgElement.style.display = "block";
+            errorElement.innerText = "";
+        } else {
+            imgElement.style.display = "none";
+            errorElement.innerText = "មិនទាន់មានទិន្នន័យរូបភាពសម្រាប់ពាក្យនេះទេ។";
+        }
+    }
+</script>
+
+</body>
+</html>
+
